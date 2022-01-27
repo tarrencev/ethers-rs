@@ -62,7 +62,7 @@ impl TryFrom<u64> for Chain {
 
     fn try_from(chainid: u64) -> Result<Chain, Self::Error> {
         match chainid {
-            1 => Ok(Chain::Mainnet),
+            i if i == u64::from(Chain::Mainnet) => Ok(Chain::Mainnet),
             3 => Ok(Chain::Ropsten),
             4 => Ok(Chain::Rinkeby),
             5 => Ok(Chain::Goerli),
@@ -105,5 +105,19 @@ impl FromStr for Chain {
             "optimism-kovan" => Chain::OptimismKovan,
             _ => return Err(ParseChainError(chain.to_owned())),
         })
+    }
+}
+
+impl Chain {
+    /// Helper function for checking if a chainid corresponds to a legacy chainid
+    /// without eip1559
+    pub fn is_legacy(&self) -> bool {
+        let chain = match self {
+            Ok(inner) => inner,
+            _ => return false,
+        };
+
+        // TODO: Add other chains which do not support EIP1559.
+        matches!(chain, Chain::Optimism | Chain::OptimismKovan | Chain::Fantom | Chain::FantomTestnet)
     }
 }
